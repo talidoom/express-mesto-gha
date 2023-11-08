@@ -19,7 +19,6 @@ const cardSchema = new mongoose.Schema({
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    type: String,
     required: {
       value: true,
     },
@@ -34,4 +33,4 @@ const cardSchema = new mongoose.Schema({
   },
 });
 
-module.export = mongoose.model('user', cardSchema);
+module.export = mongoose.model('card', cardSchema);

@@ -1,39 +1,34 @@
 const User = require('../models/User');
 
-const getUsers = async (req, res) => {
-  try {
-    const users = await User.find({});
-    return res.send(users);
-  } catch (error) {
-    return res
-      .status(500)
-      .send({ message: 'Ошибка на стороне севера', error: error.message });
-  }
+module.exports.getUsers = (req, res, next) => {
+  User.find({})
+    .then((users) => res.status(STATUS_CODES.OK).send({ users }))
+    .catch(next);
 };
 
-const createUser = async (req, res) => {
-  try {
-    const newUser = await new User(req.body);
-    console.log(req.body);
-    return res.status(200).send(await newUser.save());
-  } catch (error) {
-    console.log(error.code);
-  }
+module.exports.createUser = (req, res) => {
+  const { name, about, avatar } = req.body;
+  User.create({ name, about, avatar })
+    .then((user) => res.status(OK_CREATE).send(user))
+    .catch((err) => {
+      if (err.name === ValidationError) {
+        res.status(ERROR_DATA).send({ message: err.message });
+      } else {
+        console.error(err.message);
+        res.status(SERVER_ERROR).send({ message: 'Ошибка на стороне сервера' });
+      }
+    });
 };
 
-const getUserById = async (req, res) => {
-  try {
-    const { idUser } = req.params;
-    const user = await User.findById(idUser);
-    res.status(200).send(user);
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send({ message: 'Ошибка на стороне сервера' });
-  }
-};
-
-module.exports = {
-  getUsers,
-  createUser,
-  getUserById,
+module.exports.getUserById = (req, res) => {
+  User.findById(req.params.userId)
+    .then((user) => {
+      res.status(STATUS_CODES.OK).send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return next();
+      }
+      return next(err);
+    });
 };

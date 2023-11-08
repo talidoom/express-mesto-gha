@@ -1,22 +1,29 @@
 const express = require('express');
 const mongoose = require('mongoose');
-// const router = express.Router();
-const app = express();
-const users = require('./routes/users');
+const userRouter = require('./routes/users');
+const cardRouter = require('./routes/cards');
 
 const { PORT = 3000, MONGO_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
+const app = express();
+
 mongoose.connect(MONGO_URL);
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '5d8b8592978f8bd833ca8133', // вставьте сюда _id созданного в предыдущем пункте пользователя
-  };
+mongoose
+  .connect(MONGO_URL)
+  .then(() => console.log('БД подключена'))
+  .catch((err) => console.log('Ошбика подключения к БД', err));
 
-  next();
-});
+// app.use((req, res, next) => {
+//   req.user = {
+//     _id: '5d8b8592978f8bd833ca8133', // вставьте сюда _id созданного в предыдущем пункте пользователя
+//   };
 
-app.use('/users', users);
+//   next();
+// });
+
+app.use('/', userRouter);
+app.use('/', cardRouter);
 
 app.listen(PORT, () => {
   console.log(`Server listen port ${PORT}`);
