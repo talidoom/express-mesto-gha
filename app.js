@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 
@@ -14,14 +15,14 @@ mongoose
   .then(() => console.log('БД подключена'))
   .catch((err) => console.log('Ошбика подключения к БД', err));
 
-// app.use((req, res, next) => {
-//   req.user = {
-//     _id: '5d8b8592978f8bd833ca8133', // вставьте сюда _id созданного в предыдущем пункте пользователя
-//   };
+app.use((req, res, next) => {
+  req.user = {
+    _id: '654ca4bfe95301df12af9088', // вставьте сюда _id созданного в предыдущем пункте пользователя
+  };
+  next();
+});
 
-//   next();
-// });
-
+app.use(bodyParser.json());
 app.use('/', userRouter);
 app.use('/', cardRouter);
 
