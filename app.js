@@ -17,7 +17,7 @@ mongoose
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '654ca4bfe95301df12af9088', // вставьте сюда _id созданного в предыдущем пункте пользователя
+    _id: '654ca4bfe95301df12af9088',
   };
   next();
 });

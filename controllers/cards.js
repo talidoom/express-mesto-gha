@@ -27,7 +27,6 @@ const createCard = (req, res) => {
         res.status(STATUS_CODES.SERVER_ERROR).send({ message: 'Ошибка на стороне сервера' });
       }
     });
-  // console.log(req.user._id);
 };
 
 const deleteCard = (req, res, next) => {
@@ -43,7 +42,7 @@ const deleteCard = (req, res, next) => {
 const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+    { $addToSet: { likes: req.user._id } },
     { new: true },
   )
     .then((card) => res.status(STATUS_CODES.OK).send(card))
@@ -56,7 +55,7 @@ const likeCard = (req, res, next) => {
 const dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+    { $pull: { likes: req.user._id } },
     { new: true },
   )
     .then((card) => res.status(STATUS_CODES.OK).send(card))
