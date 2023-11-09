@@ -1,6 +1,18 @@
 [![Tests](../../actions/workflows/tests-13-sprint.yml/badge.svg)](../../actions/workflows/tests-13-sprint.yml) [![Tests](../../actions/workflows/tests-14-sprint.yml/badge.svg)](../../actions/workflows/tests-14-sprint.yml)
 # Проект Mesto фронтенд + бэкенд
 
+[**Ссылка на репозиторий**](https://github.com/talidoom/express-mesto-gha)
+
+Стек:
+1. JavaScript
+2. Mongoose
+3. Node.js
+4. Express
+5. MongoDB
+6. Postman
+7. ESLint
+
+---
 
 ## Директории
 
