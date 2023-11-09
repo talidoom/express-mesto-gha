@@ -47,7 +47,7 @@ module.exports.getCurrentUser = (req, res) => {
 
 module.exports.updateUserProfile = (req, res, next) => {
   const { name, about } = req.body;
-  return User.findByIdAndUpdate(req.user._id, { name, about }, { new: true})
+  return User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .then((user) => res.status(STATUS_CODES.OK).send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
