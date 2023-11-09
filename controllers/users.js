@@ -59,7 +59,7 @@ module.exports.updateUserProfile = (req, res, next) => {
 
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  return User.findByIdAndUpdate(req.user._id, { avatar }, { new: true})
+  return User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
     .then((user) => res.status(STATUS_CODES.OK).send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
