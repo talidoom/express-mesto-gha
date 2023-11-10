@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
@@ -22,6 +23,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(helmet());
 app.use(bodyParser.json());
 app.use('/', userRouter);
 app.use('/', cardRouter);

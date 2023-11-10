@@ -20,7 +20,7 @@ const createCard = (req, res) => {
   return Card.create({ name, link, owner: req.user._id })
     .then((card) => res.status(STATUS_CODES.CREATED).send({ card }))
     .catch((err) => {
-      if (err.name === 'ValidatynionError') {
+      if (err.name === 'ValidationError') {
         res.status(STATUS_CODES.SERVER_ERROR).send({ message: err.message });
       } else {
         console.error(err.message);
@@ -32,9 +32,8 @@ const createCard = (req, res) => {
 const deleteCard = (req, res, next) => {
   Card.findByIdAndDelete(req.params.cardId)
     .then(() => res.send({ message: 'Карточка удалена' }))
-
     .catch((err) => {
-      if (err.name === 'CastError') return res.status(STATUS_CODES.NOT_FOUND).send({ message: 'Requested card not found' });
+      if (err.name === 'CastError') return res.status(STATUS_CODES.NOT_FOUND).send({ message: 'Карточка не найдена' });
       return next(err);
     });
 };
