@@ -10,7 +10,6 @@
 4. Express
 5. MongoDB
 6. Postman
-7. ESLint
 
 ---
 
