@@ -26,6 +26,13 @@ module.exports.createUser = (req, res) => {
       }
     });
 };
+// При попытке провести тесты в github actions,
+// возникает одна из следующих проблем: на стадии сборки докер образа
+// Build supercharge/mongodb-github-action@1.6.0
+// не находится файл образа, либо же, даже если он собирается,
+// возникает проблема на этапе Start MongoDB Unable to find image 'mongo:4.4' locally.
+// В связи с вышеуказанными проблемами,
+// фактически провести тесты непосредственно кода возможности нет...
 
 module.exports.getUserById = (req, res) => {
   User.findById(req.params.userId)
