@@ -21,9 +21,8 @@ const createCard = (req, res) => {
     .then((card) => res.status(STATUS_CODES.CREATED).send({ card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(STATUS_CODES.SERVER_ERROR).send({ message: err.message });
+        res.status(STATUS_CODES.BAD_REQUEST).send({ message: err.message });
       } else {
-        console.error(err.message);
         res.status(STATUS_CODES.SERVER_ERROR).send({ message: 'Ошибка на стороне сервера' });
       }
     });
@@ -33,7 +32,7 @@ const deleteCard = (req, res, next) => {
   Card.findByIdAndDelete(req.params.cardId)
     .then(() => res.send({ message: 'Карточка удалена' }))
     .catch((err) => {
-      if (err.name === 'CastError') return res.status(STATUS_CODES.NOT_FOUND).send({ message: 'Карточка не найдена' });
+      if (err.name === 'CastError') return res.status(STATUS_CODES.SERVER_ERROR).send({ message: 'Ошибка на стороне сервера' });
       return next(err);
     });
 };
@@ -46,7 +45,7 @@ const likeCard = (req, res, next) => {
   )
     .then((card) => res.status(STATUS_CODES.OK).send(card))
     .catch((err) => {
-      if (err.name === 'CastError') return res.status(STATUS_CODES.NOT_FOUND).send({ message: 'Requested user not found' });
+      if (err.name === 'CastError') return res.status(STATUS_CODES.SERVER_ERROR).send({ message: 'Ошибка на стороне сервера' });
       return next(err);
     });
 };
@@ -59,7 +58,7 @@ const dislikeCard = (req, res, next) => {
   )
     .then((card) => res.status(STATUS_CODES.OK).send(card))
     .catch((err) => {
-      if (err.name === 'CastError') return res.status(STATUS_CODES.NOT_FOUND).send({ message: 'Requested user not found' });
+      if (err.name === 'CastError') return res.status(STATUS_CODES.SERVER_ERROR).send({ message: 'Ошибка на стороне сервера' });
       return next(err);
     });
 };

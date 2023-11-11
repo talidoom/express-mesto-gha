@@ -34,7 +34,7 @@ module.exports.getUserById = (req, res) => {
       res.status(STATUS_CODES.OK).send(user);
     })
     .catch((err) => {
-      if (err.name === 'NotValidId') {
+      if (err.message === 'NotValidId') {
         res.status(STATUS_CODES.NOT_FOUND).send({ message: 'Такого пользователя нет' });
       } else {
         res.status(STATUS_CODES.SERVER_ERROR).send({ message: 'Ошибка на стороне сервера' });
@@ -47,7 +47,7 @@ module.exports.getCurrentUser = (req, res, next) => {
     .orFail(new Error('NotUser'))
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'NotUser') return res.status(STATUS_CODES.SERVER_ERROR).send({ message: 'Ошибка на стороне сервера' });
+      if (err.message === 'NotUser') return res.status(STATUS_CODES.SERVER_ERROR).send({ message: 'Ошибка на стороне сервера' });
       return next(err);
     });
 };
@@ -58,7 +58,7 @@ module.exports.updateUserProfile = (req, res, next) => {
     .then((user) => res.status(STATUS_CODES.OK).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Такого пользователя нет' });
+        return res.status(STATUS_CODES.BAD_REQUEST).send({ message: err.message });
       }
       return next(err);
     });
@@ -70,7 +70,7 @@ module.exports.updateAvatar = (req, res, next) => {
     .then((user) => res.status(STATUS_CODES.OK).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Такого пользователя нет' });
+        return res.status(STATUS_CODES.BAD_REQUEST).send({ message: err.message });
       }
       return next(err);
     });
