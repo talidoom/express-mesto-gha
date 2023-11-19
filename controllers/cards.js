@@ -4,7 +4,7 @@ const STATUS_CODES = {
   BAD_REQUEST: 400,
   NOT_FOUND: 404,
   SERVER_ERROR: 500,
-
+  FORBIDDEN: 403,
 };
 const Card = require('../models/Card');
 
@@ -30,9 +30,18 @@ const createCard = (req, res) => {
 
 const deleteCard = (req, res, next) => {
   Card.findByIdAndDelete(req.params.cardId)
-    .then(() => res.send({ message: 'Карточка удалена' }))
+    .then((card) => {
+      if (card.owner.toString() !== req.user._id) {
+        res.status(STATUS_CODES.FORBIDDEN).send({ message: 'Попытка удалить чужую карточку' });
+      }
+      Card.findByIdAndRemove(req.params.cardId)
+        .then(() => res.send({ message: 'Карточка удалена' }))
+        .catch(next);
+    })
     .catch((err) => {
-      if (err.name === 'CastError') return res.status(STATUS_CODES.SERVER_ERROR).send({ message: 'Ошибка на стороне сервера' });
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        return res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Некорректные данные' });
+      }
       return next(err);
     });
 };
