@@ -3,39 +3,49 @@ const mongoose = require('mongoose');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
-const userRouter = require('./routes/users');
-const cardRouter = require('./routes/cards');
+const limiter = require('./middlewares/rateLimiter');
+const routeSignup = require('./routes/signup');
+const routeSignin = require('./routes/signin');
 const auth = require('./middlewares/auth');
-const { login, createUser } = require('./controllers/users');
+const routeUsers = require('./routes/users');
+const routeCards = require('./routes/cards');
 
-const { PORT = 3000, MONGO_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
+const NotFoundError = require('./errors/NotFoundError');
+const errorHandler = require('./middlewares/errorHandler');
+
+const URL = 'mongodb://127.0.0.1:27017/mestodb';
+const { PORT = 3000 } = process.env;
+
+mongoose.set('strictQuery', true);
+
+mongoose
+  .connect(URL)
+  .then(() => {
+    console.log('БД подключена');
+  })
+  .catch(() => {
+    console.log('Ошбика подключения к БД');
+  });
 
 const app = express();
 
-mongoose.connect(MONGO_URL);
-
-mongoose
-  .connect(MONGO_URL)
-  .then(() => console.log('БД подключена'))
-  .catch((err) => console.log('Ошбика подключения к БД', err));
-
-mongoose.set({ runValidators: true });
-
 app.use(helmet());
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.use(limiter);
+
+app.use('/', routeSignup);
+app.use('/', routeSignin);
+
 app.use(auth);
 
-app.use('/', userRouter);
-app.use('/', cardRouter);
-app.all('/*', (req, res, next) => {
-  next(new Error('NotFoundError'));
-});
+app.use('/users', routeUsers);
+app.use('/cards', routeCards);
 
+app.use((req, res, next) => next(new NotFoundError('Ресурс не найден')));
 app.use(errors());
-app.listen(PORT, () => {
-  console.log(`Server listen port ${PORT}`);
-});
+app.use(errorHandler);
+
+app.listen(PORT);

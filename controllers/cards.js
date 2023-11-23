@@ -1,76 +1,120 @@
-const STATUS_CODES = {
-  OK: 200,
-  CREATED: 201,
-  BAD_REQUEST: 400,
-  NOT_FOUND: 404,
-  SERVER_ERROR: 500,
-  FORBIDDEN: 403,
-};
 const Card = require('../models/Card');
+const BadRequestError = require('../errors/BadRequestError');
+const NotFoundError = require('../errors/NotFoundError');
+const AccessDeniedError = require('../errors/AccessDeniedError');
+const { HTTP_CREATED_CODE } = require('../utils/constants');
 
-const getCards = (req, res, next) => {
+function getCards(_, res, next) {
   Card.find({})
-    .then((cards) => res.send({ cards }))
+    .then((cards) => res.send({ data: cards }))
     .catch(next);
-};
+}
 
-const createCard = (req, res) => {
+function createCard(req, res, next) {
   const { name, link } = req.body;
-
-  return Card.create({ name, link, owner: req.user._id })
-    .then((card) => res.status(STATUS_CODES.CREATED).send({ card }))
+  const { userId } = req.user;
+  Card.create({ name, link, owner: userId })
+    .then((card) => res.status(HTTP_CREATED_CODE).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(STATUS_CODES.BAD_REQUEST).send({ message: err.message });
+        next(
+          new BadRequestError(
+            'Передача некорректных данных, при попытке добавления новой карточки на страницу.',
+          ),
+        );
       } else {
-        res.status(STATUS_CODES.SERVER_ERROR).send({ message: 'Ошибка на стороне сервера' });
+        next(err);
       }
     });
-};
+}
 
-const deleteCard = (req, res, next) => {
-  Card.findByIdAndDelete(req.params.cardId)
+function deleteCard(req, res, next) {
+  const { id: cardId } = req.params;
+  const { userId } = req.user;
+  Card.findById({
+    _id: cardId,
+  })
     .then((card) => {
-      if (card.owner.toString() !== req.user._id) {
-        res.status(STATUS_CODES.FORBIDDEN).send({ message: 'Попытка удалить чужую карточку' });
+      if (!card) {
+        throw new NotFoundError('Карточка c передаваемым ID не найдена');
       }
-      Card.findByIdAndRemove(req.params.cardId)
-        .then(() => res.send({ message: 'Карточка удалена' }))
-        .catch(next);
+      const { owner: cardOwnerId } = card;
+
+      if (cardOwnerId.valueOf() !== userId) {
+        throw new AccessDeniedError('Нет прав доступа');
+      }
+      return Card.findByIdAndDelete(cardId);
+    })
+    .then((deletedCard) => {
+      if (!deletedCard) {
+        throw new NotFoundError('Данная карточка была удалена');
+      }
+      res.send({ data: deletedCard });
+    })
+    .catch(next);
+}
+
+function likeCard(req, res, next) {
+  const { cardId } = req.params;
+  const { userId } = req.user;
+  Card.findByIdAndUpdate(
+    cardId,
+    {
+      $addToSet: {
+        likes: userId,
+      },
+    },
+    {
+      new: true,
+    },
+  )
+    .then((card) => {
+      if (card) return res.send({ data: card });
+      throw new NotFoundError('Карточка с данным ID не найдена');
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Некорректные данные' });
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
+        next(
+          new BadRequestError(
+            'Передача некорректных данных при попытке поставить лайк.',
+          ),
+        );
+      } else {
+        next(err);
       }
-      return next(err);
     });
-};
+}
 
-const likeCard = (req, res, next) => {
+function dislikeCard(req, res, next) {
+  const { cardId } = req.params;
+  const { userId } = req.user;
   Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
-    { new: true },
+    cardId,
+    {
+      $pull: {
+        likes: userId,
+      },
+    },
+    {
+      new: true,
+    },
   )
-    .then((card) => res.status(STATUS_CODES.OK).send(card))
+    .then((card) => {
+      if (card) return res.send({ data: card });
+      throw new NotFoundError('Карточка c ID не найдена');
+    })
     .catch((err) => {
-      if (err.name === 'CastError') return res.status(STATUS_CODES.SERVER_ERROR).send({ message: 'Ошибка на стороне сервера' });
-      return next(err);
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
+        next(
+          new BadRequestError(
+            'Передача некорректных данных',
+          ),
+        );
+      } else {
+        next(err);
+      }
     });
-};
-
-const dislikeCard = (req, res, next) => {
-  Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $pull: { likes: req.user._id } },
-    { new: true },
-  )
-    .then((card) => res.status(STATUS_CODES.OK).send(card))
-    .catch((err) => {
-      if (err.name === 'CastError') return res.status(STATUS_CODES.SERVER_ERROR).send({ message: 'Ошибка на стороне сервера' });
-      return next(err);
-    });
-};
+}
 
 module.exports = {
   getCards,
