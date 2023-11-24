@@ -19,7 +19,7 @@ function login(req, res, next) {
         });
         return res.send({ _id: token });
       }
-      throw new UnauthorizedError('Неверная почта или пароль');
+      throw new UnauthorizedError('Передан неверный логин или пароль');
     })
     .catch(next);
 }
@@ -51,7 +51,7 @@ function createUser(req, res, next) {
       if (err.code === 11000) {
         next(
           new ConflictError(
-            'Этот email уже зарегистрирован',
+            'При регистрации указан email, который уже существует на сервере',
           ),
         );
       } else if (err.name === 'ValidationError') {
